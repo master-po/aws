@@ -100,9 +100,50 @@ ELB
         mostly deprecated
     application
         http(s) and websocket
+        layer 7 only
+        route traffic based on URL path, hostname, or query string
+        good fit for containers and microservices
+        would need mutliple classic load balancers to accomplish same tasks
+        can route traffic to EC2 instances, ECS tasks, lambda functions, and private IP addresses
+        health checks are performed at target group level
+        server will receive client info in x-forwarded-for and x-forwarded-proto http headers
     network
         TCP TLS and UDP
+        layer 4 load balancer
+        about 100ms latency vs 400ms on ALB
+        has static IP
+            application and classic do not
+        used for best performance
+        must allow traffic from outside to access targets
+            traffic appears to come from source, not LB
     common security group allows 80/443 from inet to LB  and then LB to the servers
     can scale but not instantaneously
         call aws for "warm-up" if needed
-    
+    stickiness
+        uses cookies to ensure a client always reaches the same target
+        maintains sessions
+        might cause load imbalances
+        works with classic and application load balancers
+        enable by editing attributes in target group settings
+    cross-zone load balancing
+        enables load balancers to forward traffic to another AZ
+        configured in attributes of lb
+        classic lb
+            disabled by default
+            no charges for inter-AZ
+        application lb
+            always on, cant be disabled
+            no charges for inter-AZ
+        network lb
+            disabled by default
+            charges for inter-AZ traffic
+    SNI - server name indication
+        allows you to run multiple certs on the same lb
+        supported for ALB and NLB, not CLB
+        multiple listeners are configured for multiple  certs
+    connection draining****
+        instance de-registers itself
+        used to give server time to process a request
+    auto scaling group
+        scales ec2 instances out and in based on load within a defined range
+        
