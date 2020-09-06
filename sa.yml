@@ -35,6 +35,9 @@ ec2
             not databases or critical jobs
         spot block
             spot instance that is reserved for 1-6 hours
+        spot fleet
+            pools of various spot instances can be selected from to get best pricing
+            
     dedicated host
         dedicated hardware
         provides user with visibility into underlying sockets/cores
