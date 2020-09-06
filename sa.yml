@@ -41,3 +41,65 @@ ec2
         3 year reservation
         can be useful for PITA licensing
         good for strong compliance/security needs
+    instance type
+        R - good for apps that require a lot of RAM
+        C - good for apps that require a lot of 
+        M - good for medium apps such as web apps
+        I - good for apps that require high storage IO
+        G - good for apps that require GPU
+        T2/T3 - busrtable instances
+            utilizes burst credits
+            credits accumulate over time
+            similar to QoS tokens
+        T2/T3 unlimited - unlimited burst
+            no limit on bursts but there is a charge when it happens
+AMI
+    amazon machine image
+    AMIs from  amazon marketplace can be selected or build your own
+    right click on EC2 instance and choose create image
+    stored in a specific region
+    AMIs can be shared with another account using their account number
+    sharing does not change ownership
+    if they copy the AMI to another region, they own the copy
+    you cant copy an encyrpted AMI that was shared with you
+    you cant copy an AMI with an assocaited billingproduct code that was shared with you
+    permit/deny copying AMI is controller by "create volume" check box on the permissions window
+placement groups
+    cluster
+        ec2 instances are in same AZ and rack
+        low-latency
+        decreased availability due to lack of geographic diversity
+    spread
+        spans instances across multiple availability zones
+        limited to 7 instances per AZ placement group
+        used to maximize availability
+    partition
+        instances can be partitioned within a group
+        up to 7 partitions per AZ
+        used for big data apps like HDFS HBase, Cassandra, Kafka
+elastic network interfaces - ENI
+    basically a vnic
+    can have primary ipv4 addr and 1 or more secondary IP
+    can have a elastic public IP
+    bound to a specific AZ
+    interfaces can be created and assiigned/re-assigned between instances
+ec2 hibernate
+    preserves memory state
+    does not reboot  OS
+    only available in C M and R instance types
+    max 150 GB RAM supported
+    no supported on bare metal instances
+    must use encrypted EBS
+    on-demand and reserved instances only
+ELB
+    classic
+        http(s) and tcp
+        mostly deprecated
+    application
+        http(s) and websocket
+    network
+        TCP TLS and UDP
+    common security group allows 80/443 from inet to LB  and then LB to the servers
+    can scale but not instantaneously
+        call aws for "warm-up" if needed
+    
