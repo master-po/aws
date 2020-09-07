@@ -144,6 +144,56 @@ ELB
     connection draining****
         instance de-registers itself
         used to give server time to process a request
-    auto scaling group
-        scales ec2 instances out and in based on load within a defined range
+ASG - auto scaling group
+    scales ec2 instances out and in based on load within a defined range
+    attributes
+    launch configuration
+        AMI + instance type
+        EC2 user data
+        EBS volumes
+        Security groups
+        SSH key pair
+        min/max/initial size
+        network + subnet info
+        load balancer info
+        scaling policies
+    uses cloudwatch alarms to track metrics and trigger scaling
+        metrics are computed for thee overall ASG instances
+    possible rules
+        target average CPU
+        number of requests on ELB per instance
+        average network in/out
+        custom metric such as number of users
+            metric is sent to cloudwatch via cloudwatch putmetric API
+        schedule-based
+    ASGs are free
+    configured through launch config or templates
+    IAM roles assigned to ASG will get assigned to EC2 instances
+    terminates and creates new instances
+        can be based  on  LB marking an instance as unhealthy
+    target tracking scaling
+        simple and easy setup
+        example - avg cpu should be around 40%
+    simple / step scaling
+        add instances when upper threshold is reached
+        remove instances when lower threshold is reached
+    scheduled actions
+        used when growth is anticiapted
+        good for predictable capacity changes
+    scaling cooldown
+        default is 300 seconds
+        used to ensure instances arent added/removed before previous scaling activity takes effect
+        group-specific overrides default
+        scale-in may be configured different from out since in is faster
+    default termination policy
+        removes instances from AZ with most  instances
+        within an az, terminate the instance with oldest launch config/template
+    lifecycle hooks
+        when an instance is being created or terminated, \
+        tasks can happen while in pending/terminating state
+    templates should be used over configs
+        templates can have versioning
+        can have parameter subsets
+        can provision on-demand or spot instances
+        can use T2 unlimited burst
         
