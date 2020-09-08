@@ -196,4 +196,65 @@ ASG - auto scaling group
         can have parameter subsets
         can provision on-demand or spot instances
         can use T2 unlimited burst
-        
+EBS
+    network drive
+    root volume is lost when an instance is terminated
+    can be detached and re-attached to instances easily
+    locked into single availability zone
+    GP2
+        general performance SSD
+        burstable like T2 instance
+        3000-16000 IOPS
+        up to 16TB
+        IOPS is based on  volume siize
+    IO 1
+        higheest performane SSD
+        large database workloads
+        up to 16TB
+        generally max IOPS is 32,000 (nitro up to 64,000)
+        IOPS is configurable
+        max ratio of 50:1 IOPS to volume size
+    ST 1
+        low cost HDD volumes
+        good for big data
+        max IOPS 500
+        throughput optimized - max throughput 500 MB/s
+    SC 1
+        lowest cost HDD
+        up to 16TB
+        max throughput 250 MB/s
+    Only GP2 and IO1 can be root volumes
+    lsblk - amazon linux command to view volumes
+    snapshot
+        incremental - onlt changed blocks are backed up
+        resource intensive - done use during heavy load
+        stored in s3 but you cant see them
+        max 100K snapshots per account
+        can be copied across AZ or region
+        AMI can be made from snapshot
+    migration
+        create snapshot from volume and then copy to another region/AZ
+    encryption
+        data at rest, data in flight, snapshots, volumes from snapshot are all encrypted \
+            when encryption is enabled
+        minimal impact on latency
+        uses keys from KMS
+        encrypt unencrypted volume
+            create snapshot
+            encrypt snapshot
+            create new volume from snapshot
+            attach to instance
+    instance store
+        drive physically attached to disk
+        better IO performacne than EBS
+        survives reboots
+        good for cachiing
+        data is lost on reboot or termination
+        cant resize instance store
+        backups would need to be performed by user
+        up to 7.5 TB
+    RAID
+        EBS is already redundant
+        can be used to  increase performance or mirror volumes
+        0 and 1 are only recommended RAID levels
+        can give you up to 100K IOPS
