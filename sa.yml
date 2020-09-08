@@ -200,7 +200,8 @@ EBS
     network drive
     root volume is lost when an instance is terminated
     can be detached and re-attached to instances easily
-    locked into single availability zone
+    locked into single availability zone 
+    can only be attached to one instance at a time
     GP2
         general performance SSD
         burstable like T2 instance
@@ -208,7 +209,7 @@ EBS
         up to 16TB
         IOPS is based on  volume siize
     IO 1
-        higheest performane SSD
+        highest performane SSD
         large database workloads
         up to 16TB
         generally max IOPS is 32,000 (nitro up to 64,000)
@@ -258,3 +259,16 @@ EBS
         can be used to  increase performance or mirror volumes
         0 and 1 are only recommended RAID levels
         can give you up to 100K IOPS
+EFS
+    elastic file system
+    NFS - POSIX filesystem
+    not locked into single AZ like EBS
+    3x cost GP2
+    network file system that can be mounted on any EC2
+    can be linked to multiple EC2 instances at the same time
+        EBS can  obnly be  linked to one
+    use security groups to control access
+    only works for linux based AMI
+    multiple storage tiers
+        cold data can be used to EFS IA - infrequent access
+    amazon-efs-utils is a package used to connect EFS shares
