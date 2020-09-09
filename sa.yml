@@ -272,3 +272,78 @@ EFS
     multiple storage tiers
         cold data can be used to EFS IA - infrequent access
     amazon-efs-utils is a package used to connect EFS shares
+RDS
+    continuous backups (point in time restore)
+        daily full backups (defined by user)
+        transaction logs backed up every 5 minutes
+        7 day retention but can be increased to 35 days
+    snapshots
+        manually triggered by user
+        can be retained indefinitely
+    underlying OS is patched for you
+    monitoring dashboards
+    multii AZ setup for DR
+    storage backed by EBS (gp2 or io1)
+    vertical and horizontal scaling
+    postgres
+    mysql
+    mariadb
+    oracle
+    mssql
+    aurora
+    read replicas
+        up to 5 can be created
+        can be  within AZ, cross-AZ, or cross-region
+            can be multi-AZ for DR
+        eventually consistent asynchronous replication
+        commonly used for reporting applications
+        cross AZ network traffic will be charged
+    multi AZ (DR)
+        synchronous replication 
+        works in active/standby pair
+        failover database will become active during a failure
+        not used for scaling
+    encryption
+        at-rest
+            encrypt with KMS
+            has to be defined at launch time
+            read replicas cant be encrypted if master isnt
+            TDE (transparent data encryption) is available for oracle and sql
+        in-flight
+            uses SSL certificates
+            enforce SSL
+                prostgresql and mysql require commands to configure
+        snapshot will have same encryption state as db
+        database can be encrypted by making a snapshot, encrypting, then restoring
+    IAM policies are used to manage RDS
+        users are within database
+    IAM-based authentication works with mysql and postgresql
+    IAM roles can be used for authentication
+    Aurora
+        proprietary and not open source
+        optimized for AWS cloud
+        compatible with mysql and postgresql tools
+        storage grows in 10GB inicrements up to 64TB
+        up to 15 replicas
+        costs more but more efficient
+        6 copies of data are stored across 3 AZ
+        very high availability
+        only one master can be written to
+            writer endpoint is used to send writes to, it will forward to active db
+        reader endpoint can read from any replica
+        backtrack
+            restore data from any point in time without backups/snapshots
+        serverless
+            automated instantiation
+            auto-scaling (horizontal) based on usage
+            good for infrequent, intermittent, unpredictable workloads
+            no capacity planning needed
+            pay per second
+            can be more cost effective
+            client will connect to proxy fleet which connects to a database
+        global database
+            1 primary region
+            up to 5 secondary (read-only) regions
+            replicaition lag is <1s
+            up to 16 read replicas per secondary region
+            
