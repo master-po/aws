@@ -67,6 +67,8 @@ AMI
     you cant copy an encyrpted AMI that was shared with you
     you cant copy an AMI with an assocaited billingproduct code that was shared with you
     permit/deny copying AMI is controller by "create volume" check box on the permissions window
+    golden AMI - image created with dependencies and applications installed for quicker instantiation
+
 
 placement groups
     cluster
@@ -239,6 +241,7 @@ EBS
         max 100K snapshots per account
         can be copied across AZ or region
         AMI can be made from snapshot
+        can be used for faster instantiation of new services
     migration
         create snapshot from volume and then copy to another region/AZ
     encryption
@@ -288,6 +291,7 @@ RDS
     snapshots
         manually triggered by user
         can be retained indefinitely
+        can be used for instantiating another inatance quickly
     underlying OS is patched for you
     monitoring dashboards
     multii AZ setup for DR
@@ -358,9 +362,11 @@ RDS
 Elasticache
     in-memory database cache
     high performance low-latency
-    helpps reduce load from intensive workloads
+    helps reduce load from intensive workloads
     helps make application stateless
     write scaling uses sharding
+        can store session data
+        can use dynamoDB as alternative
     read scaling uses replicas
     mult AZ failover capability
     query first goes to elasticache, if the data isnt there RDS is queried
@@ -375,7 +381,7 @@ Elasticache
     lazy loading
         all accessed data is cached
         mey get stale data
-    write through
+    write through***
         add or update data to cache when written
     session store
         data is stored temporarily but with a TTL for expiration
@@ -434,3 +440,32 @@ Route 53
         can return up to 8 records
         can be associated with health checks
         similar to simple for more features
+
+Beanstalk
+    developer centric view of deploying an application
+    no cost directly, just for underlying services
+    user does not need to manage instances, just code
+    single instance
+        good fior development
+    load balancer + asg
+        good for production web apps
+    asg only
+        good for non-web apps in production
+    application, version, and environment name are components
+    many languages supported - go php ruby, java, docker, etc
+    load balancing, asg, ec2, rds, security groups can all be configured automatically
+    
+S3
+    global service but buckets are region specific
+    buckets are created and store objects
+    key is full path - s3://bucket/folder/file.txt
+    key is prefix + object name - folder/file.txt
+    object name - name of file - file.txt
+    technically there are no directories
+        just keys with long names that contain slashes
+    max object size is 5TB (5K GB)
+    must use multi-part upload for files larger than 5GB
+    key:value pairs can be added to objects
+    tags can also be added to objects also
+    versioning IDs can be added to objects
+    
