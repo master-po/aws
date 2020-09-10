@@ -36,8 +36,7 @@ ec2
         spot block
             spot instance that is reserved for 1-6 hours
         spot fleet
-            pools of various spot instances can be selected from to get best pricing
-            
+            pools of various spot instances can be selected from to get best pricing   
     dedicated host
         dedicated hardware
         provides user with visibility into underlying sockets/cores
@@ -56,6 +55,7 @@ ec2
             similar to QoS tokens
         T2/T3 unlimited - unlimited burst
             no limit on bursts but there is a charge when it happens
+
 AMI
     amazon machine image
     AMIs from  amazon marketplace can be selected or build your own
@@ -67,6 +67,7 @@ AMI
     you cant copy an encyrpted AMI that was shared with you
     you cant copy an AMI with an assocaited billingproduct code that was shared with you
     permit/deny copying AMI is controller by "create volume" check box on the permissions window
+
 placement groups
     cluster
         ec2 instances are in same AZ and rack
@@ -80,12 +81,14 @@ placement groups
         instances can be partitioned within a group
         up to 7 partitions per AZ
         used for big data apps like HDFS HBase, Cassandra, Kafka
+
 elastic network interfaces - ENI
     basically a vnic
     can have primary ipv4 addr and 1 or more secondary IP
     can have a elastic public IP
     bound to a specific AZ
     interfaces can be created and assiigned/re-assigned between instances
+
 ec2 hibernate
     preserves memory state
     does not reboot  OS
@@ -94,6 +97,7 @@ ec2 hibernate
     no supported on bare metal instances
     must use encrypted EBS
     on-demand and reserved instances only
+
 ELB
     classic
         http(s) and tcp
@@ -144,6 +148,7 @@ ELB
     connection draining****
         instance de-registers itself
         used to give server time to process a request
+
 ASG - auto scaling group
     scales ec2 instances out and in based on load within a defined range
     attributes
@@ -196,6 +201,7 @@ ASG - auto scaling group
         can have parameter subsets
         can provision on-demand or spot instances
         can use T2 unlimited burst
+
 EBS
     network drive
     root volume is lost when an instance is terminated
@@ -259,6 +265,7 @@ EBS
         can be used to  increase performance or mirror volumes
         0 and 1 are only recommended RAID levels
         can give you up to 100K IOPS
+
 EFS
     elastic file system
     NFS - POSIX filesystem
@@ -272,6 +279,7 @@ EFS
     multiple storage tiers
         cold data can be used to EFS IA - infrequent access
     amazon-efs-utils is a package used to connect EFS shares
+
 RDS
     continuous backups (point in time restore)
         daily full backups (defined by user)
@@ -285,12 +293,12 @@ RDS
     multii AZ setup for DR
     storage backed by EBS (gp2 or io1)
     vertical and horizontal scaling
-    postgres
-    mysql
-    mariadb
-    oracle
-    mssql
-    aurora
+    postgres - port 5432
+    mysql - port 3306
+    mariadb - 3306
+    oracle - 1521
+    mssql - 1433
+    aurora - 3306 or 5432 depending on mode
     read replicas
         up to 5 can be created
         can be  within AZ, cross-AZ, or cross-region
@@ -346,4 +354,83 @@ RDS
             up to 5 secondary (read-only) regions
             replicaition lag is <1s
             up to 16 read replicas per secondary region
-            
+
+Elasticache
+    in-memory database cache
+    high performance low-latency
+    helpps reduce load from intensive workloads
+    helps make application stateless
+    write scaling uses sharding
+    read scaling uses replicas
+    mult AZ failover capability
+    query first goes to elasticache, if the data isnt there RDS is queried
+    cache hit - queried data was in cache
+    cache miss - queried data was not in cache
+    queried data is cached after a cache miss
+    helps with reads
+    user session store
+        shares user state data between instances?
+    does not support IAM auth
+    supports in-flight encryption
+    lazy loading
+        all accessed data is cached
+        mey get stale data
+    write through
+        add or update data to cache when written
+    session store
+        data is stored temporarily but with a TTL for expiration
+    REDIS
+        mutli AZ failover
+        supports read replicas
+        data durability with AOF
+            makes data persistent through reboots
+        back up and restore features
+        Redis AUTH
+            password/token for accessing a redis cluster
+        use security groups for auth
+    memcached
+        uses sharding
+        non persistent cache
+        no backup/restore features
+        multi-threaded architecture
+        SASL based authentication
+
+Route 53
+    supports public records
+    supports private internal records
+    $0.50 per month per hosted zone
+    can use domains from 3rd party registrars
+    Alias record
+        similar to CNAME
+        points to a AWS resource
+        can be pointed to a root domain
+        CNAME cant be pointed to a root domain
+    simple routing policy
+        cant have health checks attached
+        can return more than one IP
+            used for client-side load-balancing
+    weighted routing policy
+        controls percent of requests to go to each resource
+        weights are added together and a percentage is derived
+        health checks can be assigned
+    latency
+        dns should respond with closest record in nearest region
+    health checks
+        default threshold is 3 health checks passed/failed
+        default check interval is 30 seconds from 15 health checkers
+            2 second average between checks
+        HTTP(S) and TCP health checks available
+        no charge up to 50 endpoints
+        more cost for advanced checks
+    failover routing policy
+        primary, secondary, and health checks are created
+        primary is provided as long as it is healthy
+        no health check is required for secondary record
+    geo location
+        routes based on user location
+        countries and continents can be specified
+        defualt can also be specified if it is not in a specific country
+    multi value
+        can return up to 8 records
+        can be associated with health checks
+        similar to simple for more features
