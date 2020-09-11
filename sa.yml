@@ -468,4 +468,59 @@ S3
     key:value pairs can be added to objects
     tags can also be added to objects also
     versioning IDs can be added to objects
-    
+    files existing before versioning is enabled will have a value of null
+    suspending versioning does not delete previous versions
+    encryption
+        SSE-S3
+            server side encryption AES256
+            must use header "x-amz-server-side-encryption" - "AES256"
+            S3 will encrypt the data
+            key is owned and maintained by amazon
+        SSE-KMS
+            customer controls keys
+            customer has audit trail
+            object is encrypted server side
+            must use header "x-amz-server-side-encryption" "aws:kms"
+                uses KMS customer master key
+        SSE-C
+            server side encryption using your own keys from outside AWS
+            amazon does not store the key
+            HTTPS must be used
+            encryption key must be provided in HTTP headers for every HTTP request made
+        client-side encryption
+            client encrypts data before sending it to AWS
+        SSE-S3 and SSE-KMS can be enabled as default options
+    security
+        IAM policies
+        bucket policies
+            bucket-wide rules 
+        object ACL
+        bucket ACL
+        IAM principal can access resource if IAM policy OR buckey policy allows it
+        explicit deny will block
+        block public access
+            used to prevent data leaks
+            prevents any object from becominig public
+        MFA delete can be enabled which requires MFA to delete a version
+        pre-signed URLs can be used to enable access to a resource for a limited amount of time
+    S3 website
+        <bucket name>.s3-website.<AWS region>.amazonaws.com
+        <bucket name>.s3-website-<AWS region>.amazonaws.com
+        403 error indicates no public access
+        configure static website hosting in bucket properties
+    CORS
+        cross origin resource sharing
+        origin - scheme, host, and port
+            https://www.google.com
+            https:// - scheme
+            www.google.com - host
+            port is 443 by default
+        webpage is received that instructs client to perform additional GET request on another site to access content
+        needs to be specifically enabled on cross origin resource to work, even is object is public
+    consistency model
+        s3 is eventually consistent
+        as soon as object is written, it can be read
+            if object was requested and unavailable before write, it may take time to update
+        GET may fetch an older version if very soon after PUT
+        object may be readable shortly after a delete
+        
