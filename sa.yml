@@ -55,6 +55,8 @@ ec2
             similar to QoS tokens
         T2/T3 unlimited - unlimited burst
             no limit on bursts but there is a charge when it happens
+    http://169.254.169.254/latest/meta-data - used for an EC2 instance to learn about itself
+        lots of URIs after meta-data are available
 
 AMI
     amazon machine image
@@ -464,12 +466,33 @@ S3
     technically there are no directories
         just keys with long names that contain slashes
     max object size is 5TB (5K GB)
-    must use multi-part upload for files larger than 5GB
     key:value pairs can be added to objects
     tags can also be added to objects also
     versioning IDs can be added to objects
     files existing before versioning is enabled will have a value of null
     suspending versioning does not delete previous versions
+    must use multi-part upload for files larger than 5GB
+        recommended for files larger than  100MB
+        can help parallelize uploads (increase upload speed)
+    transfer acceleration
+        increases transfer speed by transferring file to AWS edge location and then internally to S3
+    byte range fetch
+        parallelize get requests - increase download speed
+        can also be used to download a portion of a file such as the header
+    select and glacier select
+        you can use sql queries to select a portion of a file such as a csv to minmize downloads/reads
+        server-side  filtering will happen
+        less network transfer and CPU usage
+    event  notifications
+        event targets can be SNS, SQS, or lambda
+    athena
+        serverless service to query s3 files in SQL format
+        has ODBC/JDBC drivers
+        BI, analytics, logging, reporting, flows, etc
+    locking
+        s3 object lock / glacier vault lock
+        object can't be modified or deleted once created
+        used for compliance and data retention
     encryption
         SSE-S3
             server side encryption AES256
@@ -482,6 +505,7 @@ S3
             object is encrypted server side
             must use header "x-amz-server-side-encryption" "aws:kms"
                 uses KMS customer master key
+            5-30K KMS requests per second (depending on location) allowed for storage
         SSE-C
             server side encryption using your own keys from outside AWS
             amazon does not store the key
@@ -523,4 +547,168 @@ S3
             if object was requested and unavailable before write, it may take time to update
         GET may fetch an older version if very soon after PUT
         object may be readable shortly after a delete
+    MFA Delete
+        requires MFA to do important operations on S3
+        versioning must be enabled
+        only bucket owner can enable/disable MFA delete
+        can only be enabled via CLI
+    Access logs
+        all S3 requests will be logged
+        logging bucket should be separate from monitored bucket
+            infinite loop will be caused if you dont do this
+    Replication
+        CRR - cross region replication
+        SRR - same region replication
+        asynchornous replication
+        can be copied to another account
+        only new objects are replicated
+        delete operations are not replicated
+        no replication chaining from a replicated bucket to another bucket
+        entire bucket or specific prefix/tags can be replicated
+    Pre-signed URLs
+        could be used to prevent users from having a permanent URL
+        temporarily allow user to upload file
+        can be generated via CLI or SDK
+            downloads via CLI
+            uploads viua SDK
+        default timeout for URL is 3600s (one hour)
+    Standard - general purpose
+        high durability (11 x 9s)
+        works across multiple AZs
+        5x 9 availability
+        can sustaiin 2 facility failures
+        big data, mobilie apps, content distribution
+    Standard IA
+        infrequently accessed but does require rapid access
+        lower cost than s3
+        same durability/reliability as standard
+    One zone IA
+        same as IA but stored in one AZ
+        data lost iif one AZ is destroyed
+        used for backup data or data that can be recreated
+    Intelligent tiering
+        moves objects between tiers based on access pattern
+        small monthly monitoring fee
+    Glacier
+        low cost storage for archiving/backup
+        data is retained long term (10+ years)
+        very low cost per month + retrieval cost
+        stored in vault which is similar to buckets
+        retrieval options
+            expedited 1-5 minutes
+            standard 3-5 hours
+            bulk 5-12 hours
+        minimum storage durationi of 90 days
+        deep archive
+            even cheaper than glacier
+            retrieval options
+                standard 12 hours
+                bulk 48 hours
+            minimum storage duration 180 days
+    lifecycle rules
+        defines how to automaticallt move objects between tiers or delete based on age/access
+
+CLI
+    aws configure - allows you to enter keys and default settings
+    EC2 instances should use IAM roles, not your key credentials for authenticated actions
+    aws s3 mb s3://name - makes a bucket
+    aws s3 rb s3://name - removes bucket
+
+SDK
+    recommended to use default credential provider chain
+    do not store credentials in code
+    may rely on instance profile credentials
+    aws credentials at ~/.aws/credentials for on-prem computers
+    assists with rate-limiting through exponential backoff
+
+AWS Policy
+    resource - resource providing access to
+    polcy simulator - kind of like packet tracer. analyzes what policy impact will be
+
+Cloudfront
+    protects from DDoS attacks
+    creates CDN for data
+    origins
+        s3
+            distribute files and cache at edge
+            Cloudfront OAI - origin access identity
+                IAM role for cloudfront to access bucket
+            can also be used as ingress upload to s3
+        custom origin
+            any http enndpoint
+            ALB, EC2, S3 website, any http backend
+    geo restrictions
+        white/blacklist based on country/region/etc
+    vs cross region replication
+        cloudfront is global, files are cached for a day or so after retrieval, great for static content and global access
+        CRR must be setup for each region, file are updated real-time, read-only, great for dynamic content which
+            requires access in a few regions
+    signed url / cookie
+        expires after a period of time
+            could be minutes to years
+        includes which IP data will be accessed from
+        url can be used for a single file or path
+        cookies can be used for multiple files
+        cloudfront signed url different than s3 pre-signed url
+            cf has more features and could be http in addition to object
+            cf can filter by ip range
+            cf needs to be used if cf is in use
+            pre-signed allows direct access to bucket
+
+global accelerator
+    traffic is sent to nearest edge location across AWS insternal network to resource
+    creates 2 anycast IPs for your application
+    works with elastic IP, ec2, ALB, NLB
+    does not server cached content from edge like cloudfront
+
+snowball
+    physical data transport for moving lots of data to aws cloud
+    use if it takes over a week to transfer your data to the network
+    install snowball client on to servers, copy data, ship to amazon
+    edge
+        adds compute capability to device
+        can run ec2 or lambda functions
+    snowmobile
+        used for exabytes of data
+        a literal truck
+        100 PB capacity
+    cant import into glacier directly
+        import into s3 then use lifecycle policy to move to glacier
+    
+storage gateway
+    used for hybrid cloud environments
+        DR, backup, tiered storage
+    file gateway
+        runs on-prem
+        caches s3 storage localy
+        used to make s3 buckets available using NFS or SMB
+        supports S3 standard IA and one-zone IA
+        bucket uses IAM roles for each gateway
+        data is cached in file gateway
+        can be mounted on many servers
+    volume gateway
+        block storage using iSCSI backed by S3
+        backed by EBS snapshots which can resotre on-prem volumes
+        cached volumes provide low latency access to recent data
+        stored volumes - entire dataset is on-prem with scheduled backups to s3
+        on-prem volume gateway is accessed  via iSCSI
+    tape gateway
+        tape gateway exists on-prem and uses iSCSI
+        data is backed up to virtual tapes in s3 and archived tapes in glacier
+    hardware appliance is available 
+
+FSx
+    for windows
+        fully managed windows file system shared drive
+        support SMB and NTFS
+        AD integration
+        built on SSD
+        can be multi-AZ for HA
+        backed up daily to S3
+    for lustre
+        linux + cluster = lustre
+        used for large scale computing, HPC, machine learning
+        very high performance
+        seamless integration with s3
+        can be used from on-prem servers
         
