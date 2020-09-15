@@ -711,4 +711,197 @@ FSx
         very high performance
         seamless integration with s3
         can be used from on-prem servers
-        
+
+SQS
+    facilitates asynchronous communication
+    used to decouple applications
+    unlimited throughput and number of messages in queue
+    default message retention is 4 days, max 14 days
+    < 10  ms response time
+    256KB max message size
+    may have duplicate and out of order messages (at least once delivery, best effort)
+    consumers pull data
+    consumers can poll up to 10 messages at a time
+    consumers should delete messages using deletemessage API
+    throughput is not provisioned
+    encryption in flight using HTTPS
+    encryption at rest via KMS
+    IAM policies are used to control access to SQS API
+    SQS access policies can also be used and are similar to S3 bucket policies
+    Message visibility timeout
+        period of timie where message becomes "invisible" to consumers after it has been polled
+        message will become visible again if it is not deleted during the timeout period
+        ChangeMessageAvailability can be adjusted to change this
+    dead letter queue
+        when a consumer fails to process a message during the timeout it is moved back to the queue
+        thresholds can be set for how many time this^ can happen
+        once threshold is reached, message is moved to dead letter queue
+        useful for debugging
+        DLQ should have high retention such as 14 days
+        configured like a normal queue, other queues sppecify it as their DLQ
+    delay queue
+        default is 0 but can be configured up to 15 minutes
+        default can be defined at queue level or inidividually with the DelaySeconds parameter
+        delays messages - not sure what use case is
+    FIFO Queue
+        first messages in are first out
+        maintains ordering
+        limited to 300 msg/s or 3000 msg/s with batching
+        name must end with .fifo
+        deduplication ID must be specified with message
+    ASG integration
+        cloudwatch is commonly used  to scale ec2 instances when queue length becomes too long
+        custom metric is defined in cloudwatch
+        alarm is created to trigger scaling
+
+SNS
+    used when messages need to be sent to many receivers
+    publisher/subscriber model
+    event producer sends message to one SNS topic
+    subscribers liisten to topic notifications
+    each topic subscriber will get all messages
+    data is pushed to subscribers
+    up to 10M subscriptions
+    100K topic limit
+    data is not peristent in queue, will be lost if not delivered
+    do not need to provision throughput
+    subscribers can be basically anything
+    topic publish is standard, but direct publish exists for mobile apps
+    in-flight encryption with HTTPS
+    at rest encryption with KMS
+    AIM policies for access control
+    SNS access polices can be used which are similar to s3 bucket policies
+    Fan-out
+        messages are sent to SNS topic first, then multiple SQS queues subscribe to it
+        common to use multiple queues for multiple applications
+        SNS can't send messages to FIFO queues
+        commonly used with s3 notifications
+            s3 notifications can only be sent to one location
+
+Kinesis
+    managed alternative to apache kafka
+    great for application logs, metrics, IoT, real-time big data, streaming telemetry
+    data is auto replicated to 3 AZ
+    data is sent to streams, then can be analyzed by analytics, then stored with firehose
+    data expires after a set number of days
+    access control is delegated through IAM policies
+    encryption in flight with HTTPS
+    encryption at reast with KMS
+    VPC endpoints can be add to make kinesis available within VPC
+    throughput must be provisioned
+    Kinesis Streams
+        low latency streaming ingest at scale
+        streams are divided into shards/partitions
+        default data retention is 1 day, max is 7 days
+        consumers pull data
+        unlimited consumers
+        data can be replayed
+        multiple apps can consume the same stream
+        data does not get deleted, it just expires?
+        shard
+            one stream is many shards
+            1MB/s or 1000msg/s write per shard
+            2MB/s read per shard
+            billing is per shard provisioned
+            messages can be batched
+            records are ordered per shard
+            messages get a sequence number when they are received
+            API
+                put records are used to send data to kinesis
+                must use partition key (shard id)
+                partition keys should be chosen in a way that creates distribution across shards
+                ProvisionedThroughputExceeded - similar to 429 error, shard is overloaded
+                    use backoff timers or more shards to fix
+        consumers can use CLI, SDK, or Kinesis clent library for consumption
+            KCL uses dynamoDB
+    Kinesis Analytics
+        used for real time analytics on streams using SQL
+    Kinesis Firehose
+        loads streams into s3, redshift, elasticsearch, splunk
+        fully managed, automatically scales, no administration
+        near real-time (60 sec latency minimum for non-full batches)
+            or 32MN data at a time
+        pay for amount of data going through firehose
+        does not store data
+
+MQ
+    managed apache activeMQ
+    doesnt scale as well as SQS/SNS
+    has queues and topics
+    good for migrating apps from on-prem to the cloud
+    runs on dedicated machine with HA failover
+    supports openwire, ws, mqtt, stomp, amqp protocols
+
+Lambda
+    runs on-demand
+    pay per request and compute time
+    free tier - 1M requests and 400,000 GB compute time
+        $0.20 for next 1M requests
+        billing also based on amout of RAM provisioned
+    up to 3GB RAM can be provisioned per function
+    node.js, java, python, c#, golang, ruby, powershell, customer runtime API
+    can't run docker in lambda
+    scales automatically
+    errors are output to cloudwatch logs
+    128MB to 3TB RAM available
+    max execution time is 900s/15m
+    max 4KB environment variables
+    max 512MB disk capacity in /tmp
+        /tmp should be used to load files at startup
+    default 1000 concurrency executions (can be increased)
+    max deployment size zipped - 50MB
+        unzipped - 250MB
+    Lambda@edge
+        deploys lambda functions with cloudfront instead of in one AZ
+        can use lambda to change cloudfront requests and responses
+        viewer request (user to cloudfront), origin request (cloudfront to origin), \
+            origin response (origin to cloudfront), and viewer response (cloudfront to user) can all be modified with lambda
+        responses can be sent to users without communicating with origin (AWS resource)
+
+DynamoDB
+    NoSQL - not only sql
+    fully managed, highly available across 3 AZ
+    can handle millions of requests per second, trillions of rows, 100s of TB of storage
+        massively scalable
+    uses  IAM for security
+    low latency
+    auto scaling
+    made of tables
+    each table has primary key
+    tables can infinite rows
+    each item has attributes
+    maximum item size 400KB
+    DMS can be used to migrate from mongo, oracle, mysql, etc
+    table must have provisioned read and write capacity units
+        RCU - read capacity units
+            1 RCU = 1 strongly consistent or 2 eventually consistent read(s) of 4KB/s
+        WCU - write capacity units
+            1 WCU = 1 write of 1KB/s
+        auto-scaling can be configured to meet demand
+        throughput can be temporarily exceeded with burst credits
+            ProvisionedThroughException is error similar to 429 when burst credits are used
+    DAX
+        DynamoDB accelerator
+        seamless cache for dynamodb
+        fixes hotkey problem (too many reads on a specific key)
+        5 minute TTL cache by default
+        multi AZ
+    Streams
+        changes in  dynamodb are sent to dynamodb stream
+        allows for reacting to changes like new users, analytics, inserting into elasticsearch
+        24 hour data retention
+    Transactions
+        coordinates insert update and delete across multiple tables
+        "all or nothing" tables
+    on demand
+        no capacity planning needed
+        WCU RCU scales automatically
+        more expensive
+        helpful with unpredicatble traffic spikes
+    backup/restore
+        point in time like RDS
+        no performance impact
+    global tables
+        cross region replication
+        must enable streams
+        useful for low latency and DR purposes
