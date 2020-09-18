@@ -294,6 +294,7 @@ RDS
         manually triggered by user
         can be retained indefinitely
         can be used for instantiating another inatance quickly
+    amazon will provision an EC2 instance for you
     underlying OS is patched for you
     monitoring dashboards
     multii AZ setup for DR
@@ -340,6 +341,7 @@ RDS
         storage grows in 10GB inicrements up to 64TB
         up to 15 replicas
         costs more but more efficient
+        automatically scales storage
         6 copies of data are stored across 3 AZ
         very high availability
         only one master can be written to
@@ -905,3 +907,89 @@ DynamoDB
         cross region replication
         must enable streams
         useful for low latency and DR purposes
+
+API Gateway
+    can be used with lambda to create a serverless api
+        also  supports http endpoints for backend
+        also supports SQS foor backend
+    automatically handles rate-limiting, caching, authenticaton, etc
+    supports websockets
+    supports versioning
+    supports multiple environments such as  dev test prod
+    can do authentication and authorization
+    support swagger / open api import
+    edge optimized 
+        for  global clients
+        uses cloudfront edge
+        API still lives in one  region
+    regional
+        for regional clients
+        could manually combine with cloudfront
+    private
+        can only be accessed from within VPC
+        use resource polucy to define access
+    IAM permissions can be used to delegate access
+        works  well for access within your own infrastructure
+        uses sigv4 cpabilities where IAM credentials are in header
+    Lambda authorizer
+        most common
+        lambda validates token passed in header
+        authentication can be cached
+        used for oauth / SAML / other 3rd party auth
+        lambda  returns IAM policy for user
+    Cognito
+        fully manages users
+        API  gateway verifies identity automatically via cognito
+        only helps with authentication, not authorization
+        client gets token from cognito, passes token to API gateway
+        user pool
+            sign in functionality for app users
+            integrated with API  gateway
+        identity pools
+            provides aws credentials to users so they can access resource directly
+            integrates with user pools as identity provider
+        cognito sync
+            deprecated and replaced by app sync
+            synchronizes mobile data with cognito
+        cognito user pools
+            serverless database of users for your mobile app
+            uses simple username password login
+            supports  email verification and MFA
+            can enable federated identitites like facebook, google, saml
+            sends JSON web token JWT to authenticated user
+            can be integrated with API gateway
+        federated identity pools
+            federated identity is provideed and temporary credentials for \
+                access to AWS ressources is granted
+            credentials have IAM policies configured
+            can be used for providing temp access to write a file to s3
+
+SAM
+    servern application model
+    framework for developing and deploying serverless applications
+    all configs are in YAML
+        lambda functions
+        dynamodb tables
+        api gateway
+        cognito user pools
+    can help you rn lambda, api gateway, dynamodb locally
+    can use codedeploy to deploy lambda functions
+
+Redshift
+    based on postgresql
+    OLAP - online analytical processing
+    used for analytics and data warehousing
+
+Neptune
+    fully managed graph database
+    good for mapping relationships like social media
+    high availability across 3 AZ
+    use clustering to improve performance
+
+ElasticSearch
+    works well with nosql databases like dynamodb
+    can do partial matches on keys
+    big data
+    can provision clusters
+    works with kibana and logstash (ELK)
+    
