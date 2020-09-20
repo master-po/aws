@@ -992,4 +992,238 @@ ElasticSearch
     big data
     can provision clusters
     works with kibana and logstash (ELK)
+
+CLoudwatch
+    10 free monitors in free tier
+    ec2 detailed monitoring
+        defualt is 5 minute interval
+        detailed monitoring provides 1 min interval monitoring
+        helps ASGs scale better
+    custom metrics
+        dimensions (attributes) can be added to segment metrics
+        uses API PutMetricData
+        use exponential backoff in case of throttle errors
+    dashboards
+        global in scope, can include data from different regions
+        time zones can be changed
+        automatic refresh can be configured
+        3 dashboards up to 50 metrics are in free tier
+    cloudwatch logs
+        logs can be collected from beanstalk, ECS, lambda, VPC flows, API gateway, cloudtrail, cloudwatch log agents, route53
+        logs can be exported to s3 or elasticsearch
+        log groups can be configured
+            usually represents an application
+        log streams will be configured within log groups
+            used to divide instances within an app
+        log expiration dates can be configured
+        can be viewed realtime with CLI
+        agent is required for ec2 to push logs to cloudwatch
+            IAM permissions required
+        logs agent
+            old
+            only sends logs to cloudwatch
+        unified agent
+            new
+            collects resource info in addition to logs
+            centralized configuration via SSM parameter store
+        cloudwatch alarms
+            used to trigger notifications for any metric
+            alarm states
+                OK
+                insufficient_data
+                alarm
+            period
+                length of time in seconds to evaluate the metric
+                high resolution custom metrics can only choose 10 or 30 seconds
+        ec2 instance recovery
+            cloudwatch can be used to recover a VM 
+                includes private/public IPs, metadata, placement group, etc
+            instance check - checks vm status
+            system status - checks underlying hardware
+        cloudwatch events
+            scheduled with cron jobs or event patterns (matching an event) such as codepipeline changes
+            triggers lambda/SQS/SNS/kinesis
+            creates json document to provide info about event
+
+Cloudtrail
+    provides governance, compliance, and auditing
+    enabled by default
+    history of all events/API calls made within AWS account
+        includes console, SDK, CLI, AWS services
+    cloudtrail logs can be sent to cloudwatch
+    check cloudtrail if a resource is deleted
+
+AWS Config
+    auditing and compliance
+    records config changes and compliance-level over time
+    stores config data in s3 to be analyzed by athena
+    can  verify things like
+        is there unrestricted SSH access to anything
+        do any buckets have public access
+        how has ALB confiig changed over time
+    receive SNS alerts for changes
+        can be triggered on change  or periodically
+    per-region service, but can be aggregated across regions and accounts
+    can create rules for auto-remediation
+    $2 / active region / month - no proo-rating
+
+STS
+    Security Token Service
+    grants limited and temporary access to AWS resources
+    token is valid for up to one hour (must be refreshed)
+    AssumeRole
+        used within your own account or cross account for enhanced security
+    AssumeRoleWithSAML
+        return credentials for SAML users
+        replaced by Amazon SSO (for ADFS / federation)
+    AssumeRoldWithWebidentity
+        can be used for 3rd party identity providers
+        recommended to use cognito instead
+    GetSessionToken
+        for MFA
+    Custom Identity broker can be  used if on-prem identity is not SAML compatible
+    Assume Role API is called specifying which IAM role you want to assume, STS verifies with IAM \
+         and returns token if approvedo
+    assuming a role is kind of like su linux command
+    original permissions are lost when assuming a role
+    
+Cognito
+    usees 3rd party identity provider for authentication
+        could be google, facebook, Cognito User Pool, etc
+    process
+        user logs in to  identity provider
+        token is provided and passed to aws
+        aws verifies token
+        aws gets credentials fromo STS
+        STS token is provided to user for access to AWS resources
+    
+AWS Directory Services
+    managed microosoft AD
+        trust can be established to on-prem AD
+    AD connector
+        directory gateway is estblished in AWS
+        all requests are proxied to on-prem AD
+
+Organizations
+    allows you to manage multiple AWS accounts
+    member accounts can only be part of one organization
+    accounts may be a dept, cost center, test/dev/prod, etc
+    primarily used for billing
+    OUs are used for segmentation
+    one master account will manage all OUs
+    service control policy
+        allows you to whitelist or blacklist IAM actions
+        applied at account or OU level
+        does not apply to master account
+        applied to  all users and roles of the account, including the root
+        does not affect service-linked roles
+        ddoes not allow anything by default (things must be explicitly allowed)
+        used for restricting access to resources or compliance
+    to move accounts between orgs, they must  be removed from the original org and send an invite from the new org
+    to move master account, old org must be deleted
+
+IAM
+    conditions
+        aws:SourceIP  - restricts accessed to APIs based on source IP address
+        aws:RequestedRegion - restricts region API calls are being made to
+        can also restrict access based on tags or force MFA for certain actions
+     S3
+        bucket level permissions (such as listbucket) are applied to the resource (arn:aws:s3:::test)
+        object level permissions (get put delete) are applied within a bucket (arn:aws:s3:::test/*)
+    resource boundary
+        used to restrict access of users and roles
+        takes precedence over account-level permissions
+
+Resource Access Manager
+    allows you to share resources with other AWS accounts
+    works with any account or within your own org
+    avoids resource duplication
+    vpc subnets, transit gateway, route53 resolved rules, etc can be shared
+
+Amazon SSO
+    integrated with AWS organizations
+    supports saml 2.0
+    integrated with on-prem AD
+    provides centralized permission management
+    provides centralized auditing with cloudtrail
+    assumerolewithsaml differences
+        SSO is  much simpler
+        SSO does not use STS
+        SSO login portal integrates directly with identity provider
+
+KMS
+    Key types
+        symmetric
+            AES-256
+            no access to actual key
+            single key for encrypting and decrypting
+        asymmetric
+            RSA & ECC key pairs
+            public and private key pair
+            no access to private key
+            can also be used for signing
+            can be used by users outside AWS who cant call APIs
+    audit with cloudtrail
+    customer master keys
+        AWS managed service default - free
+        User created key in KMS - $1 / month
+        imported users keys - $1 / month - not recommended
+        $0.03 per 1000 API calls
+    kms can only encrypt up to 4KB data per call
+        envelope encryption should be used for larger API calls
+    moving an ecnrypted snapshot across regions
+        create snapshot
+        copy snapshot and re-encrypt with new key
+        recreate volume 
+    KMS keys are bound to a specific region
+    has default key policies which are similar to s3 bucket policies
+
+SSM Parameter store
+    secure storage for configuration and secrets
+    serverless, scalable, durable
+    easy sdk
+    version tracking
+    get notifications via cloudwatch events
+    integrated with cloudformation
+    parameter policies can be attached that expire credentials or force updating
+    aws ssm get-parameters --names [name of key] --with-decryption
+        used to get keys from SSM in decrypted format
+    boto3 - python library fer keys?
+
+AWS Secrets Manager
+    newer service used for storing secrets
+    can force rotation of secrets
+    can automate generation of secrets on rotation
+    integrated with RDS
+        mostly intended for RDS?
+    secrets are managed via KMS
+
+CloudHSM
+    provisioned hardware module
+    FIPS 140-2 level 3 compliance
+    can use clusters are multi AZ for HA
+    supports symmetric and asymmetric encryption
+    must use cloudhsm client software
+    redshift support
+    good for SSE-C rencryption
+
+Shield
+    shield standard - free
+        protects against layer 3/4 attacks (syn/udp flood, felecton, etc)
+    shield advanced
+        $3K / mo / org
+        protects against sophisticated attacks on EC2, ELB, cloudfront, glocal accelerator, route 53
+        24/7 ddos response team is included
+
+WAF
+    layer 7 firewall for web apps
+    can be deployed on ALB, API gateway, and cloudfront
+    rules can be IPs, HTTP headers, HTTP body, or URI strings
+    protects froom SQL Injection and XSS
+    geo-matching can be used to block specific countries
+    rate-based rules can be used to help prevent ddos
+
+AWS firewall manager
+    manage rules accross all accounts in an AWS org
+    manages WAF, shield advanced, and security groups for EC2
     
