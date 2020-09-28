@@ -1226,4 +1226,133 @@ WAF
 AWS firewall manager
     manage rules accross all accounts in an AWS org
     manages WAF, shield advanced, and security groups for EC2
+
+VPC
+    default VPC has internet connectivity and all instances have a public IP
+    subnets are tied to an availability zone
+    5 IPs are reserved in each subnet
+        network address, VPC router, mapping to DNS, reserved for future use, broadcast address
+    auto-assign public IP setting is used  to automatically assign a public in addition to a private IP for each instance
+    NAT instances
+        allows instances in private subnets to talk to the internet
+        must be launched in a public subnet
+        must have elastic IP
+        must disable EC2 flag - src/dest check
+        route table must route from private subnets to nat instance
+    NAT Gateway
+        aws managed nat
+        pay by hour
+        created in a specific AZ, will use elastic IP
+        can only be used by instances in other subnets
+        requires an internet gateway
+        5Gb bandwidth which auto-scales up to 45Gb
+        no security groups to manage
+        resilient wiithin a single AZ
+            must setup multiple in mutliple AZ for fault tolerance
+    DNS resolution
+        enableDnsSupport - DNS resolution setting
+            default is true
+            determines is dns resolution is enabled for the VPC
+            if true queries will go to 169.254.169.253
+        enableDnsHostname - DNS hostname setting
+            false by default for new VPCs, true by default for default VPC
+            no affect unless enableDnsSupport=true
+            when true, public hostname is assigned to EC2 instance if it has public ip
+        ^both must be enabled if you want to use custom dns names in a private zone in route53
+    NACL
+        NACL rules are evaluated before security groups for inbound traffic
+        security groups are stateful and allow all outbound traffic
+        NACL can be used for outbound traffic as well
+        NACLs use ACE numbers (1-32766), rules are evaluated until a match is found
+        implicit deny all at end of NACL
+        new NACLs will deny all by default
+    VPC Peering
+        VPC peering is not transitive
+            If A connect to B and B to C, A and C are not connected
+        cannot have overlapping IP ranges
+        can work inter-region and cross acount
+        routes need to be maually added
+    VPC Endpoint
+        used to talk directly to AWS services via private network
+        two types interface and gateway
+            interface
+                provisions ENI (private IP) as entry point
+                works with most aws services
+            gateway
+                provisioned target and route table is automatically updated
+                used for s3 and dynamodb
+    Flow Logs
+        can capture VPC, Subnet, and ENI flows
+        can be sent directly to s3 or cloudwatch logs
+        athena or cloudwatch log insights can be used to view flows
+    Bastion Hosts
+        linux host in public subnet used as a proxy to reach internal servers
+        basically a jumpbox
+    Virtual private Gateway
+        vpn concentrator within AWS
+        can customize the ASN
+        attached to VPC where you want to make site to site VPN
+        customer gateway - on-prem vpn endpoint
+        customer gateway and amazon virtual private gateway must be configured
+            then VPN connection is configured using these 
+    Direct connect
+        private connection
+        virtual private gateway needs to be configured in desired VPC
+        used to increase throughput, more consistent networking, etc
+        direct connect gateway can be configured to connect to multiple VPCs
+        1 or 10Gb are options
+        hosted connections
+            utilizes AWS direct connect partners
+            more speed options
+            can be added or removed on-demand
+        data is transit is not encrypted by default
+            use with VPN encryption
+    Egress only internet gateway
+        ipv6 only
+        similar to nat but  for ipv6
+    AWS private link (aka VPC endpoint services)
+        used to connect to many VPCs such as customer VPCs
+        load balancer is created in your service VPC
+        ENI is created in customer VPC
+    EC2 classic and AWS classiclink
+        ec2 classic - instances run in shared network with other customers
+        amazon vpc - logically isolates instances
+        both are deprecated
+    VPN cloudhub
+        similar to sdwan
+        enables backup connectivity between sites through AWS VPN
+        hub and spoke model
+    Transit Gateway
+        star topology for conneecting all VPC and network resources
+        supports multicast
+    Network Costs
+        inbound traffic is free
+        private to private IP within an AZ is free
+        $0.02/Gb for public to public communication between AZs
+        $0.01/Gb for private to private communication between AZs
+        $0.02/Gb for inter-region traffic
+
+Database migration service
+    runs on ec2 instance
+    supports like-to-like and mixed  migrations
+        ms to ms or ms to aurora
+    supports continuous data replication using CDC
+    sources
+        oracle, mysql, mariadb, ms, postgresql, SAP, azure, amazon rds, s3
+    targets
+        oracle, ms, mysql, mariadb,  progesql, SAP, amazon rds, amazon redshift, dyanmodb, s3, etc
+    SCT schema conversion tool required  to migrate from one db to another
+
+On-prem AWS stuff
+    VMs can be imported and exported to/from ec2 and on-prem hypervisor
+    application discovery service
+        gathers inifo about on-prem servers to help plan migration
+        looks ar server utilization and dependency mappings
+        track via migration hub
+    SMS server migration service
+        replicates on-prem servers to AWS
+    Datasync
+        helps migrate large amounts of data to aws
+        used for on-prem NFS/SMB server migrations
+        can replicate data weekly, daily, or hourly
     
