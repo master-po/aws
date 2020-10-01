@@ -57,6 +57,15 @@ ec2
             no limit on bursts but there is a charge when it happens
     http://169.254.169.254/latest/meta-data - used for an EC2 instance to learn about itself
         lots of URIs after meta-data are available
+    SR-IOV
+        higher bandwidth ec2 instance
+        has elastic network adapter - ENA
+            up to 100gbps
+    elastic fabric adapter
+        improved ENA
+        only works for linux
+        good for lots of internode communications
+        bypasses OS to provide higher performance
 
 AMI
     amazon machine image
@@ -260,7 +269,7 @@ EBS
         drive physically attached to disk
         better IO performacne than EBS
         survives reboots
-        good for cachiing
+        good for caching
         data is lost on reboot or termination
         cant resize instance store
         backups would need to be performed by user
@@ -1356,3 +1365,128 @@ On-prem AWS stuff
         used for on-prem NFS/SMB server migrations
         can replicate data weekly, daily, or hourly
     
+AWS batch
+    multinode parallel jobs
+        enables you to run single jobs that span multiple ec2 instances
+    easily schedule jobs and lauch ec2 instances
+AWS parallelcluster
+    open source cluster management tool
+    configured with text files
+    automates creation of VPC, subnet, cluster type, and instance types
+
+CodeBuild
+    aws version of jenkins
+    can run code tests and deliver results
+    builds and releases software
+CodeCommit
+    similar to github
+AWS Codepipeline
+    manages full CICD pipeline
+        codecommit, codebuild, beanstalk, codedeploy, etc
+
+Cloudformation
+    similar to terraform
+    declarative way of describing what infra should look like
+    define sec group, ec2, EIPs, S3, ELB and it will be deployed for you
+    stackset
+        allows you to create updeate or delete cloudformation across multple accounts
+    
+ECS - elastic container service
+    ECS core - ecs on user-provisioned EC2 instances
+    fargate - ECS on AWS managed compute
+        scales automatically
+    EKS - ECS on AWS-powered kubernetes
+    IAM security is supported
+    can be used with ALB and  port mapping feature
+        allows you to run muiltiple containers on the same instance
+    uses ecs config file to assign instances to an ec2 cluster, pull images, log with cloudwatch, enable IAM roles
+    ECR - elastic container registry
+        repo for container images
+    ECS Task role
+        similar to IAM role but for an individual container rather than the EC2 instance it runs on
+    
+EKS - elastic kubernetes service
+    managed kubernetes
+    primary use case if migrating from an existing kube environment
+
+Step Functions
+    JSON state machine
+    orchestrates lambda functions
+    can integrate with EC2, ECS, on-prem servers, API gateway
+SWF - simple workflow service
+    runs on ec2
+    workflow 
+    similar to step functions but older version
+
+EMR
+    elastic mapreduce
+    helps create hadoop clusters
+    emr clusters can be made of hundreds of ec2 instances
+    auto-scales
+    can integrate with spot instances
+
+Glue
+    managed ETL - extract transport load
+    automates time coonsuming steps for data analytics
+    serverless
+    automates code generation for apache spark
+    works with aurora, rds, redshift, s3
+
+opsworks
+    managed chef and puppet
+
+Elastic transcoder
+    converts media files stored in s3 to various formats
+    intended to optimize files for different mediums (mobile/tv/etc)
+
+workspaces
+    cloud VDI
+    integrates with microsoft AD
+    supports linux too
+
+appsync
+    stores mobile and webapp data in real time
+    uses graphql
+        facebook technology
+    integrates with dynamodb/lambda
+    replaces cognito sync
+
+well architected framework
+    operational excellence
+        operations/infra as code
+        annotate documentation
+        make frequent small reversible changes
+        refine operations procedures frequently
+        anticipate failure
+        learn from operational failures
+    security
+        strong identity foundation
+            principle of least privilege
+        enable traceability/logging
+        apply security at all layers
+        automate security best practices
+        protect data in transit and at rest
+        reduce or eliminate need for direct access to data
+        prepare for security events
+    reliability
+        test recovery procedures
+        automatically recover from failure
+        scale horizontally
+        stop guessing capacity
+            use autoscaling
+        manage changes via automation
+    performance efficiency
+        democratize advanced technologies
+            enables you to focus on product development
+        go global in minutes
+        use serverless architectures
+        expirement more often
+        mechanical sympathy
+            be aware of all aws services
+    cost optimization
+        adopt a consumption mode
+            pay only for what you use
+        measure overall efficiency
+        stop spending on DC operations (use hosting)
+        analyze and attribute expenditure
+        use managed and application  level services to reduce cost of ownership
