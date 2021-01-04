@@ -66,6 +66,16 @@ ec2
         only works for linux
         good for lots of internode communications
         bypasses OS to provide higher performance
+    instance store
+        drive physically attached to disk
+        better IO performacne than EBS
+        survives reboots
+        good for caching
+        ephemral - data is lost on reboot or termination
+        cant resize instance store
+        backups would need to be performed by user
+        up to 7.5 TB
+        fixed capacity
 
 AMI
     amazon machine image
@@ -193,6 +203,7 @@ ASG - auto scaling group
         simple and easy setup
         example - avg cpu should be around 40%
     simple / step scaling
+        uses cloudwatch alarms to trigger
         add instances when upper threshold is reached
         remove instances when lower threshold is reached
     scheduled actions
@@ -216,6 +227,7 @@ ASG - auto scaling group
         can use T2 unlimited burst
 
 EBS
+    used for ec2 instances
     network drive
     root volume is lost when an instance is terminated
     can be detached and re-attached to instances easily
@@ -234,17 +246,22 @@ EBS
         generally max IOPS is 32,000 (nitro up to 64,000)
         IOPS is configurable
         max ratio of 50:1 IOPS to volume size
+        good for workloads that require >10K IOPS or 160MiB/s
     ST 1
         low cost HDD volumes
         good for big data
         max IOPS 500
         throughput optimized - max throughput 500 MB/s
+        cannot be a boot volume
     SC 1
         lowest cost HDD
         up to 16TB
         max throughput 250 MB/s
+        cannot be a boot volume
     Only GP2 and IO1 can be root volumes
     lsblk - amazon linux command to view volumes
+    SSD has better IOPS, better for random access
+    HDD is better for sequential access
     snapshot
         incremental - onlt changed blocks are backed up
         resource intensive - done use during heavy load
@@ -265,15 +282,6 @@ EBS
             encrypt snapshot
             create new volume from snapshot
             attach to instance
-    instance store
-        drive physically attached to disk
-        better IO performacne than EBS
-        survives reboots
-        good for caching
-        data is lost on reboot or termination
-        cant resize instance store
-        backups would need to be performed by user
-        up to 7.5 TB
     RAID
         EBS is already redundant
         can be used to  increase performance or mirror volumes
@@ -309,6 +317,8 @@ RDS
     multii AZ setup for DR
     storage backed by EBS (gp2 or io1)
     vertical and horizontal scaling
+        vertical scaling through using a larger instance
+        horizontal scaling through replicas
     postgres - port 5432
     mysql - port 3306
     mariadb - 3306
@@ -322,6 +332,8 @@ RDS
         eventually consistent asynchronous replication
         commonly used for reporting applications
         cross AZ network traffic will be charged
+        not supported for MSSQL or oracle
+            mysql, mariadb, postgresql, aurora all support rr
     multi AZ (DR)
         synchronous replication 
         works in active/standby pair
@@ -339,10 +351,11 @@ RDS
                 prostgresql and mysql require commands to configure
         snapshot will have same encryption state as db
         database can be encrypted by making a snapshot, encrypting, then restoring
-    IAM policies are used to manage RDS
-        users are within database
-    IAM-based authentication works with mysql and postgresql
-    IAM roles can be used for authentication
+    IAM policies are used to manage RDS itself and not the tables
+        users are stored within database
+    IAM-based authentication for database access works with mysql and postgresql
+        users get an access token via the API
+        IAM roles can be used for authentication
     Aurora
         proprietary and not open source
         optimized for AWS cloud
@@ -350,9 +363,9 @@ RDS
         storage grows in 10GB inicrements up to 64TB
         up to 15 replicas
         costs more but more efficient
-        automatically scales storage
-        6 copies of data are stored across 3 AZ
-        very high availability
+        automatically scales storage**
+        6 copies of data are stored across 3 AZ**
+        very high availability**
         only one master can be written to
             writer endpoint is used to send writes to, it will forward to active db
         reader endpoint can read from any replica
@@ -370,7 +383,7 @@ RDS
             1 primary region
             up to 5 secondary (read-only) regions
             replicaition lag is <1s
-            up to 16 read replicas per secondary region
+            up to 16 read replicas per secondary region 
 
 Elasticache
     in-memory database cache
@@ -389,7 +402,7 @@ Elasticache
     helps with reads
     user session store
         shares user state data between instances?
-    does not support IAM auth
+    does not support IAM auth ***
     supports in-flight encryption
     lazy loading
         all accessed data is cached
@@ -407,12 +420,14 @@ Elasticache
         Redis AUTH
             password/token for accessing a redis cluster
         use security groups for auth
+        supports data persistence
     memcached
         uses sharding
         non persistent cache
         no backup/restore features
         multi-threaded architecture
         SASL based authentication
+        simpler and easier to setup
 
 Route 53
     supports public records
@@ -554,6 +569,7 @@ S3
         needs to be specifically enabled on cross origin resource to work, even is object is public
     consistency model
         s3 is eventually consistent
+            strongly  consistent for new objects
         as soon as object is written, it can be read
             if object was requested and unavailable before write, it may take time to update
         GET may fetch an older version if very soon after PUT
@@ -688,7 +704,7 @@ snowball
     
 storage gateway
     used for hybrid cloud environments
-        DR, backup, tiered storage
+        primarily DR and backups
     file gateway
         runs on-prem
         caches s3 storage localy
@@ -716,6 +732,7 @@ FSx
         built on SSD
         can be multi-AZ for HA
         backed up daily to S3
+        throughput must be provisioned
     for lustre
         linux + cluster = lustre
         used for large scale computing, HPC, machine learning
@@ -739,10 +756,16 @@ SQS
     encryption at rest via KMS
     IAM policies are used to control access to SQS API
     SQS access policies can also be used and are similar to S3 bucket policies
+    long polling
+        default wait time for messages is 0 seconds
+        can be  increased up to 20 seconds
+        can reduce un-necessary requests if polling is frequently empty
+        receivemessagewaittimeseconds is parameter to wait longer than 0
     Message visibility timeout
-        period of timie where message becomes "invisible" to consumers after it has been polled
+        period of time where message becomes "invisible" to consumers after it has been polled
         message will become visible again if it is not deleted during the timeout period
         ChangeMessageAvailability can be adjusted to change this
+            can be requested adhoc as well
     dead letter queue
         when a consumer fails to process a message during the timeout it is moved back to the queue
         thresholds can be set for how many time this^ can happen
@@ -751,15 +774,16 @@ SQS
         DLQ should have high retention such as 14 days
         configured like a normal queue, other queues sppecify it as their DLQ
     delay queue
+        message sits in queue for specified amount of time before being available to consumers
         default is 0 but can be configured up to 15 minutes
         default can be defined at queue level or inidividually with the DelaySeconds parameter
         delays messages - not sure what use case is
     FIFO Queue
         first messages in are first out
         maintains ordering
-        limited to 300 msg/s or 3000 msg/s with batching
+        limited throughput - 300 msg/s or 3000 msg/s with batching
         name must end with .fifo
-        deduplication ID must be specified with message
+        deduplication ID and message group id must be specified with message
     ASG integration
         cloudwatch is commonly used  to scale ec2 instances when queue length becomes too long
         custom metric is defined in cloudwatch
@@ -810,6 +834,7 @@ Kinesis
         multiple apps can consume the same stream
         data does not get deleted, it just expires?
         shard
+            message key is hashed to create shard id
             one stream is many shards
             1MB/s or 1000msg/s write per shard
             2MB/s read per shard
@@ -988,6 +1013,9 @@ Redshift
     based on postgresql
     OLAP - online analytical processing
     used for analytics and data warehousing
+    sql queries are used but for aggregate data, and not single lines
+    not meant for instering data
+    columnar database
 
 Neptune
     fully managed graph database
@@ -1120,11 +1148,12 @@ Organizations
     primarily used for billing
     OUs are used for segmentation
     one master account will manage all OUs
-    service control policy
+    SCP - service control policy
         allows you to whitelist or blacklist IAM actions
         applied at account or OU level
         does not apply to master account
         applied to  all users and roles of the account, including the root
+            OU permissions take precedence over individual account permissions
         does not affect service-linked roles
         ddoes not allow anything by default (things must be explicitly allowed)
         used for restricting access to resources or compliance
@@ -1144,10 +1173,12 @@ IAM
         takes precedence over account-level permissions
 
 Resource Access Manager
-    allows you to share resources with other AWS accounts
+    allows you to share resources, such as VPC with other AWS accounts
     works with any account or within your own org
     avoids resource duplication
     vpc subnets, transit gateway, route53 resolved rules, etc can be shared
+    one use case would be resources from multiple accounts  existing  in the same vpc
+        and using private IPs
 
 Amazon SSO
     integrated with AWS organizations
@@ -1297,6 +1328,8 @@ VPC
     Bastion Hosts
         linux host in public subnet used as a proxy to reach internal servers
         basically a jumpbox
+    Site to site VPN
+    must configuree customer gateway (remote location) and virtual private gateway (aws) to then setup site to site vpn 
     Virtual private Gateway
         vpn concentrator within AWS
         can customize the ASN
@@ -1334,6 +1367,8 @@ VPC
     Transit Gateway
         star topology for conneecting all VPC and network resources
         supports multicast
+        direct connect gateway can connect into this  to
+        regional resource
     Network Costs
         inbound traffic is free
         private to private IP within an AZ is free
@@ -1420,10 +1455,12 @@ SWF - simple workflow service
 
 EMR
     elastic mapreduce
-    helps create hadoop clusters
+    auto-create hadoop clusters
     emr clusters can be made of hundreds of ec2 instances
     auto-scales
     can integrate with spot instances
+    data is input from and output to s3
+
 
 Glue
     managed ETL - extract transport load
@@ -1431,6 +1468,7 @@ Glue
     serverless
     automates code generation for apache spark
     works with aurora, rds, redshift, s3
+    best for batch jobs
 
 opsworks
     managed chef and puppet
@@ -1490,3 +1528,7 @@ well architected framework
         stop spending on DC operations (use hosting)
         analyze and attribute expenditure
         use managed and application  level services to reduce cost of ownership
+
+HA vs Fault tolerance
+    HA means the application runs even if degraded during a partial failure
+    fault tolerance means the application runs without degradation during a failure
