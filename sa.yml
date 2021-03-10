@@ -1532,3 +1532,45 @@ well architected framework
 HA vs Fault tolerance
     HA means the application runs even if degraded during a partial failure
     fault tolerance means the application runs without degradation during a failure
+
+AWS DR Webinar notes
+    EBS needs to be backed up to additional AZ
+
+    active/passive dr
+        dns health checks with weighting
+        
+    active/active dr
+        dns could use geolocation or other load-balancing techniques
+        
+    aws backup
+        centralized backups for many AWS services
+        
+    pilot light
+        live database replica is needed
+        EC2 instances can be configured but shutdown
+        use route53 to failover from one site to the other
+        takes some time to spini up servics
+        
+    warm standby
+        live database replica is needed
+        some ec2 instances exist and are live, but scaled down
+        additional ec2 instances are enabled when needed
+        route53 is used to failover
+        
+    multi site active/active
+        2 full sites
+        some type of load balancing is utilized
+            probably geolocation
+
+    generally recommended to use multiple regions
+    multi AZ can be used also
+        AZ are independent and shouldnt be in the same failure domain
+        might be needed for data residency requirements within a country
+        
+    cloudformation can be used to consistently build applicatioins across different regions
+
+    cloudendure
+        3rd party?
+        pilot light strategy for on-prem to cloud DR
+        
+    use cloudwatcch to determine if resources are down
