@@ -45,7 +45,7 @@ ec2
         good for strong compliance/security needs
     instance type
         R - good for apps that require a lot of RAM
-        C - good for apps that require a lot of 
+        C - good for apps that require a lot of ?
         M - good for medium apps such as web apps
         I - good for apps that require high storage IO
         G - good for apps that require GPU
@@ -314,7 +314,7 @@ RDS
     amazon will provision an EC2 instance for you
     underlying OS is patched for you
     monitoring dashboards
-    multii AZ setup for DR
+    multi AZ setup for DR
     storage backed by EBS (gp2 or io1)
     vertical and horizontal scaling
         vertical scaling through using a larger instance
@@ -1399,7 +1399,7 @@ On-prem AWS stuff
         helps migrate large amounts of data to aws
         used for on-prem NFS/SMB server migrations
         can replicate data weekly, daily, or hourly
-    
+
 AWS batch
     multinode parallel jobs
         enables you to run single jobs that span multiple ec2 instances
@@ -1425,7 +1425,7 @@ Cloudformation
     define sec group, ec2, EIPs, S3, ELB and it will be deployed for you
     stackset
         allows you to create updeate or delete cloudformation across multple accounts
-    
+
 ECS - elastic container service
     ECS core - ecs on user-provisioned EC2 instances
     fargate - ECS on AWS managed compute
@@ -1532,6 +1532,7 @@ well architected framework
 HA vs Fault tolerance
     HA means the application runs even if degraded during a partial failure
     fault tolerance means the application runs without degradation during a failure
+
 
 AWS DR Webinar notes
     EBS needs to be backed up to additional AZ

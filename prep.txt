@@ -1,0 +1,78 @@
+2 TAMs
+1 technical breadth
+2 technical depth
+
+200 in 4 domains, and 300 in 1
+areas with depth
+    review
+    acronyms + definitions
+
+must be better than 50%
+   
+customer obsession
+learn and be curious
+earn trust
+bias for action
+inventy and simplify
+ownership
+deliver results
+have backbone disagree and commit
+    commit is most important
+
+hiring manager + bar raiser
+
+bar raiser
+    not on my team
+
+executive presence and etiquette
+dont type on keyboard
+    write notes on paper
+
+sanjay bhatia
+    principal TAM
+    5 years san jose
+
+gabe akisanmi
+    enterprise support manager
+    hiring manager
+    shadowed by keith motte
+
+wedge martin
+sr tam
+2 years
+
+james gunnett
+sr tam 2 years san diego
+
+ram krishnam
+sr tam 1.7 years san jose
+reports to gabe
+
+linkedin article by bar raiser
+
+ask lots of questions
+
+
+
+earn trust!
+
+
+
+
+QUESTIONS
+what is a typical day like for you?
+how much time can I use for studying?
+are the hours flexible or do I need to be at my desk for a certain time window?
+    take baby to doctor as example
+what can you tell me about the customer I am supporting?
+    industry?
+    location?
+    AWS services used?
+    what do they want to see from AWS support?
+    have there been any unique challenges with this customer?
+how many on my team?
+are there other people in other depts that support the same customer?
+how do we escalate issues?
+what other teams do we work with within AWS?
+how long would I expect to be assigned to this customer?
+how much travel and to where?
